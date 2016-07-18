@@ -35,3 +35,7 @@ class TestFinders(Test):
         people = scope.all()
         assert people[0].name == 'Joe'
 
+    def test_all(self):
+        people = Person.all()
+        assert len(people) == 10
+        assert isinstance(people[0], Person)
