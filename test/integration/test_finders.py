@@ -1,7 +1,3 @@
-from nose.tools import *
-from mock import patch
-from mock import PropertyMock
-
 import py_jsonapi_client as japi
 
 class ApplicationRecord(japi.Model):
@@ -10,6 +6,8 @@ class ApplicationRecord(japi.Model):
 
 class Person(ApplicationRecord):
     path = '/people'
+
+    name = japi.Attribute()
 
 class Test(object):
     def setup(self):
@@ -39,3 +37,12 @@ class TestFinders(Test):
         people = Person.all()
         assert len(people) == 10
         assert isinstance(people[0], Person)
+
+    def test_pagination(self):
+        people = Person.per(2).page(2).all()
+        assert len(people) == 2
+        assert map(lambda p: p.name, people) == ['Bill', 'David']
+
+    def test_first(self):
+        person = Person.where({ 'name': 'Bill' }).first()
+        assert person.name == 'Bill'

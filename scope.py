@@ -1,9 +1,11 @@
 from request import Request
+import util
 
 class Scope:
     def __init__(self, model):
         self.model = model
-        self.filter_clause = {}
+        self.filter_clause = util.Hash()
+        self.pagination_clause = util.Hash()
 
     def all(self):
         url = self.__base_url()
@@ -23,11 +25,26 @@ class Scope:
         json = Request(self).get(path)
         return self.model(json['data']['attributes'])
 
+    def first(self):
+        return self.page(1).per(1).all()[0];
+
+    def per(self, number):
+        self.pagination_clause['number'] = number
+        return self;
+
+    def page(self, number):
+        self.pagination_clause['size'] = number
+        return self;
+
     def as_query_params(self):
         qp = {}
         if bool(self.filter_clause):
             for key, value in self.filter_clause.iteritems():
                 qp['filter['+key+']'] = value
+        if bool(self.pagination_clause):
+            qp['page[number]'] = self.pagination_clause['number']
+            qp['page[size]'] = self.pagination_clause['size']
+
         return qp
 
     # private

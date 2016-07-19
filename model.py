@@ -1,5 +1,7 @@
 from scope import Scope
 from model_meta import ModelMeta
+from errors import UndefinedAttributeError
+import util
 
 class Model(object):
     __metaclass__ = ModelMeta
@@ -8,24 +10,25 @@ class Model(object):
     namespace = None
     path = None
 
-    @classmethod
-    def find(self, id):
-        return self.scope().find(id)
+    find  = util.delegate(to='scope')
+    where = util.delegate(to='scope')
+    all   = util.delegate(to='scope')
+    first = util.delegate(to='scope')
+    per   = util.delegate(to='scope')
+    page  = util.delegate(to='scope')
 
     @classmethod
     def scope(self):
         return Scope(self)
 
-    # todo proper delegation
-    @classmethod
-    def where(self, clause):
-        return self.scope().where(clause)
-
-    # todo proper delegation
-    @classmethod
-    def all(self):
-        return self.scope().all()
-
     def __init__(self, attributes = {}):
+        self.attributes = util.Hash()
+
         for key, value in attributes.iteritems():
+             self.__set_attribute(key, value)
+
+    # Private
+
+    def __set_attribute(self, key, value):
+        if key in self.attribute_list:
             setattr(self, key, value)

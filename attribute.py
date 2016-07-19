@@ -1,5 +1,3 @@
-import do
-
 class Attribute(object):
     name      = None
     serialize = True

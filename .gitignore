@@ -2,3 +2,7 @@
 *.swp
 *.swn
 *.swo
+dist
+build
+PyJSONAPIClient.egg-info
+.eggs
