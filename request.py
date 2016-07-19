@@ -9,4 +9,4 @@ class Request:
         if 'params' in opts:
             params = opts['params']
         response = requests.get(url, params=params)
-        return response.json()
+        return response

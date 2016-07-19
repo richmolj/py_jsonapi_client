@@ -1,3 +1,4 @@
+import inflection
 import util
 from attribute import Attribute
 from attribute_list import AttributeList
@@ -10,6 +11,7 @@ class ModelMeta(type):
 
         ModelMeta.__process_delegates(dct)
         ModelMeta.__process_attributes(dct)
+        dct['jsonapi_type'] = inflection.underscore(inflection.pluralize(name))
 
         klass = super(ModelMeta, cls).__new__(cls, name, parents, dct)
         return klass

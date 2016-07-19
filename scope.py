@@ -1,4 +1,5 @@
 from request import Request
+from errors import RecordNotFoundError
 import util
 
 class Scope:
@@ -6,11 +7,13 @@ class Scope:
         self.model = model
         self.filter_clause = util.Hash()
         self.pagination_clause = util.Hash()
+        self.order_clause = util.Hash()
+        self.fields_clause = util.Hash()
 
     def all(self):
         url = self.__base_url()
         query_params = self.as_query_params()
-        json = Request(self).get(url, params=query_params)
+        json = Request(self).get(url, params=query_params).json()
         models = []
         for item in json['data']:
             models.append(self.model(item['attributes']))
@@ -22,11 +25,25 @@ class Scope:
 
     def find(self, id):
         path = "{base_url}/{id}".format(base_url=self.__base_url(), id=id)
-        json = Request(self).get(path)
-        return self.model(json['data']['attributes'])
+        query_params = self.as_query_params()
+        response = Request(self).get(path, params=query_params)
+        if response.status_code == 404:
+            raise RecordNotFoundError(self.model, id)
+        else:
+            return self.model(response.json()['data']['attributes'])
 
     def first(self):
         return self.page(1).per(1).all()[0];
+
+    def select(self, fields):
+        namespace = self.model.jsonapi_type
+        self.fields_clause[namespace] = fields
+        return self
+
+    def pluck(self, attribute):
+        self.select([attribute])
+        records = self.all()
+        return map(lambda r: getattr(r, attribute), records)
 
     def per(self, number):
         self.pagination_clause['number'] = number
@@ -36,18 +53,53 @@ class Scope:
         self.pagination_clause['size'] = number
         return self;
 
+    def order(self, order):
+        if isinstance(order, dict):
+            self.order_clause = order
+        else:
+            self.order_clause[order] = 'asc'
+        return self
+
     def as_query_params(self):
         qp = {}
         if bool(self.filter_clause):
-            for key, value in self.filter_clause.iteritems():
-                qp['filter['+key+']'] = value
+            qp.update(self.__filter_query_params())
         if bool(self.pagination_clause):
-            qp['page[number]'] = self.pagination_clause['number']
-            qp['page[size]'] = self.pagination_clause['size']
+            qp.update(self.__pagination_query_params())
+        if bool(self.order_clause):
+            qp.update(self.__order_query_params())
+        if bool(self.fields_clause):
+            qp.update(self.__fields_query_params())
 
         return qp
 
     # private
+
+    def __filter_query_params(self):
+        params = {}
+        for key, value in self.filter_clause.iteritems():
+            params['filter['+key+']'] = value
+        return params
+
+    def __fields_query_params(self):
+        params = {}
+        namespace, fields = self.fields_clause.items()[0]
+        fields = ",".join(fields)
+        return { 'fields[' + namespace + ']': fields }
+
+    def __pagination_query_params(self):
+        params = {}
+        if 'number' in self.pagination_clause:
+            params['page[number]'] = self.pagination_clause['number']
+        if 'size' in self.pagination_clause:
+            params['page[size]'] = self.pagination_clause['size']
+        return params
+
+    def __order_query_params(self):
+        attribute, direction = self.order_clause.items()[0]
+        if direction == 'desc':
+            attribute = '-' + attribute
+        return { 'sort': attribute }
 
     def __base_url(self):
         url = self.model.site

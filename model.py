@@ -10,12 +10,15 @@ class Model(object):
     namespace = None
     path = None
 
-    find  = util.delegate(to='scope')
-    where = util.delegate(to='scope')
-    all   = util.delegate(to='scope')
-    first = util.delegate(to='scope')
-    per   = util.delegate(to='scope')
-    page  = util.delegate(to='scope')
+    find   = util.delegate(to='scope')
+    where  = util.delegate(to='scope')
+    order  = util.delegate(to='scope')
+    all    = util.delegate(to='scope')
+    first  = util.delegate(to='scope')
+    per    = util.delegate(to='scope')
+    page   = util.delegate(to='scope')
+    select = util.delegate(to='scope')
+    pluck  = util.delegate(to='scope')
 
     @classmethod
     def scope(self):

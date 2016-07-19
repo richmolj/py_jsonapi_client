@@ -4,7 +4,8 @@ setup(
     name="PyJSONAPIClient",
     version="0.1",
     install_requires=[
-        "requests"
+        "requests",
+        "inflection"
     ],
     tests_require=[
         "mock",
