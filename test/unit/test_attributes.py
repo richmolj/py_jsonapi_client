@@ -44,6 +44,16 @@ class TestSubclassing(object):
     def test_python_special_properties_not_inherited(self):
         assert SpecialPost.__module__ != NamespacedModel.__module__
         assert SpecialPost.__doc__ != Post.__doc__
+        assert SpecialPost.path != Post.path
+        assert SpecialPost.jsonapi_type != Post.jsonapi_type
 
     def test_properties_inherited(self):
         assert SpecialPost.basic == True
+
+class TestDerivations(object):
+
+    def test_path_derived(self):
+        assert Post.path == '/posts'
+
+    def test_jsonapi_type_derived(self):
+        assert Post.jsonapi_type == 'posts'

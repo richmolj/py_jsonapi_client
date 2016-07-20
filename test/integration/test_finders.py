@@ -7,13 +7,9 @@ class TestFinders(object):
         person = Person.find(1)
         assert person.name == 'John'
 
+    @raises(japi.RecordNotFoundError)
     def test_find_missing_record(self):
-        raised = False
-        try:
-            Person.find(11111)
-        except japi.RecordNotFoundError as e:
-            raised = True
-        assert raised == True
+        Person.find(11111)
 
     def test_where(self):
         scope  = Person.where({ 'name': 'John' })

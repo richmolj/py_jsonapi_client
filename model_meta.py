@@ -28,6 +28,8 @@ class ModelMeta(type):
             ModelMeta.__merge_parent_dictionary(parent, dct)
         if not 'jsonapi_type' in dct:
             dct['jsonapi_type'] = inflection.underscore(inflection.pluralize(name))
+        if not 'path' in dct:
+            dct['path'] = '/' + dct['jsonapi_type']
         return dct
 
     @staticmethod
@@ -36,6 +38,7 @@ class ModelMeta(type):
         del parent_dct['__module__']
         del parent_dct['__doc__']
         del parent_dct['jsonapi_type']
+        del parent_dct['path']
         dct.update(parent_dct)
 
     @staticmethod

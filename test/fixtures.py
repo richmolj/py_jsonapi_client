@@ -1,3 +1,4 @@
+import os
 import namespace_helper
 
 import py_jsonapi_client as japi
@@ -36,8 +37,6 @@ class ApplicationRecord(japi.Model):
     namespace = 'api'
 
 class Person(ApplicationRecord):
-    path = '/people'
-
     name = japi.Attribute()
     age = japi.Attribute()
 
@@ -54,3 +53,15 @@ class Pet(ApplicationRecord):
 
 class Toy(ApplicationRecord):
     name = japi.Attribute()
+
+class Admin(ApplicationRecord):
+    name = japi.Attribute()
+
+class AuthdAdmin(Admin):
+    path = '/admins'
+    jsonapi_type = 'admins'
+
+    auth_header = 'Token token="{token!s}"'.format(token='4utht0k3n')
+
+class ResponseCode(ApplicationRecord):
+    code = japi.Attribute()

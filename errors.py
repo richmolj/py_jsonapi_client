@@ -13,3 +13,15 @@ class RecordNotFoundError(Exception):
 
     def __str__(self):
         return "Failed to lookup %s with id %s" % (self.klass.__name__, self.record_id)
+
+class UnauthenticatedError(Exception):
+    def __str__(self):
+        return "Server returned 401 - Bad token?"
+
+class ServerError(Exception):
+    def __str__(self):
+        return "API endpoint returned 500 - error on API side"
+
+class AccessDeniedError(Exception):
+    def __str__(self):
+        return "API endpoint returned 403"

@@ -14,7 +14,7 @@ class Scope:
     def all(self):
         url = self.__base_url()
         query_params = self.as_query_params()
-        json = Request(self).get(url, params=query_params).json()
+        json = Request(self.model).get(url, params=query_params).json()
         models = []
         for payload in json['data']:
             models.append(util.model_from_payload(payload, json))
@@ -27,7 +27,7 @@ class Scope:
     def find(self, id):
         path = "{base_url}/{id}".format(base_url=self.__base_url(), id=id)
         query_params = self.as_query_params()
-        response = Request(self).get(path, params=query_params)
+        response = Request(self.model).get(path, params=query_params)
         if response.status_code == 404:
             raise RecordNotFoundError(self.model, id)
         else:
