@@ -9,4 +9,10 @@ class AttributeList(util.Hash):
 
         This class now decorates the Hash of keys foo, bar
     """
-    None
+
+    def relation_list(self):
+        dct = {}
+        for key, value in self.iteritems():
+            if hasattr(value, 'relation'):
+                dct[key] = value
+        return dct

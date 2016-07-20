@@ -9,14 +9,15 @@ class Scope:
         self.pagination_clause = util.Hash()
         self.order_clause = util.Hash()
         self.fields_clause = util.Hash()
+        self.include_clause = util.Hash()
 
     def all(self):
         url = self.__base_url()
         query_params = self.as_query_params()
         json = Request(self).get(url, params=query_params).json()
         models = []
-        for item in json['data']:
-            models.append(self.model(item['attributes']))
+        for payload in json['data']:
+            models.append(util.model_from_payload(payload, json))
         return models
 
     def where(self, clause):
@@ -30,7 +31,7 @@ class Scope:
         if response.status_code == 404:
             raise RecordNotFoundError(self.model, id)
         else:
-            return self.model(response.json()['data']['attributes'])
+            return util.model_from_payload(response.json()['data'], response.json())
 
     def first(self):
         return self.page(1).per(1).all()[0];
@@ -44,6 +45,12 @@ class Scope:
         self.select([attribute])
         records = self.all()
         return map(lambda r: getattr(r, attribute), records)
+
+    def includes(self, inclusions):
+        directive = util.IncludeDirective(inclusions)
+        util.deep_merge(self.include_clause, directive.to_dict())
+
+        return self
 
     def per(self, number):
         self.pagination_clause['number'] = number
@@ -70,6 +77,8 @@ class Scope:
             qp.update(self.__order_query_params())
         if bool(self.fields_clause):
             qp.update(self.__fields_query_params())
+        if bool(self.include_clause):
+            qp.update(self.__include_query_params())
 
         return qp
 
@@ -80,6 +89,10 @@ class Scope:
         for key, value in self.filter_clause.iteritems():
             params['filter['+key+']'] = value
         return params
+
+    def __include_query_params(self):
+        directive = util.IncludeDirective(self.include_clause)
+        return { 'include': directive.to_string() }
 
     def __fields_query_params(self):
         params = {}

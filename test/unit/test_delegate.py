@@ -10,7 +10,7 @@ class PostHistory(object):
     def revision_count(self):
         return 3
 
-class Post(japi.Model):
+class DelegatePost(japi.Model):
     revisions      = japi.util.delegate(to='history')
     revision_count = japi.util.delegate(to='history')
     text           = japi.util.delegate(to='history.note')
@@ -21,23 +21,23 @@ class Post(japi.Model):
 class TestDelegation(object):
 
     def test_class_level_delegation(self):
-        assert Post.revisions == [1,2,3]
+        assert DelegatePost.revisions == [1,2,3]
 
     def test_instance_level_delegation(self):
-        post = Post()
+        post = DelegatePost()
         assert post.revisions == [1,2,3]
 
     def test_function_delegation(self):
-        assert Post.revision_count() == 3
+        assert DelegatePost.revision_count() == 3
 
     def test_alternate_method_names(self):
-        assert Post.note_text == 'A note'
+        assert DelegatePost.note_text == 'A note'
 
     def test_multi_level_delegation(self):
-        assert Post.text == 'A note'
+        assert DelegatePost.text == 'A note'
 
     def test_set(self):
-        post = Post()
+        post = DelegatePost()
         post.text = 'New note'
         assert post.text == 'New note'
         assert post.history.note.text == 'New note'

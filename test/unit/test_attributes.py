@@ -1,17 +1,8 @@
 from nose2.tools import *
+from ..fixtures import *
+from ..namespace_helper import NamespacedModel
 
-from namespace_helper import NamespacedModel
 import py_jsonapi_client as japi
-
-class Post(japi.Model):
-    title        = japi.Attribute()
-
-    basic = True
-
-class SpecialPost(Post):
-    """
-        Special Doc
-    """
 
 class TestInstantiation(object):
 

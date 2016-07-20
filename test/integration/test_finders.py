@@ -1,23 +1,8 @@
+from ..fixtures import *
+from ..helpers import *
 import py_jsonapi_client as japi
 
-class ApplicationRecord(japi.Model):
-    site = 'http://localhost:3001'
-    namespace = 'api'
-
-class Person(ApplicationRecord):
-    path = '/people'
-
-    name = japi.Attribute()
-    age = japi.Attribute()
-
-class Test(object):
-    def setup(self):
-        print 'setup'
-
-    def teardown(self):
-        print 'teardown'
-
-class TestFinders(Test):
+class TestFinders(object):
     def test_find(self):
         person = Person.find(1)
         assert person.name == 'John'
@@ -50,7 +35,7 @@ class TestFinders(Test):
     def test_pagination(self):
         people = Person.per(2).page(2).all()
         assert len(people) == 2
-        assert map(lambda p: p.name, people) == ['Bill', 'David']
+        assert matchArray(map(lambda p: p.name, people), ['Bill', 'David'])
 
     def test_first(self):
         person = Person.where({ 'name': 'Bill' }).first()
@@ -76,5 +61,21 @@ class TestFinders(Test):
     def test_pluck(self):
         plucked_names = Person.pluck('name')
         names = map(lambda p: p.name, Person.all())
-        assert plucked_names == names
 
+        assert matchArray(plucked_names, names)
+
+    def test_includes(self):
+        person = Person.includes(['tags', { 'pets': 'toys' }]).first()
+        tag_names = map(lambda t: t.name, person.tags)
+        pet_names = map(lambda p: p.name, person.pets)
+        pet1_toy_names = map(lambda t: t.name, person.pets[0].toys)
+        pet2_toy_names = map(lambda t: t.name, person.pets[1].toys)
+        assert matchArray(tag_names, ['smart', 'funny'])
+        assert matchArray(pet_names, ['Lassie', 'Spot'])
+        assert matchArray(pet1_toy_names, ['ball'])
+        assert matchArray(pet2_toy_names, ['bone'])
+
+    def test_not_included_not_loaded(self):
+        person = Person.includes('tags').first()
+        assert len(person.tags) == 2
+        assert len(person.pets) == 0

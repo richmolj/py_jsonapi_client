@@ -13,6 +13,19 @@ class IncludeDirective(object):
             dct[key] = value.to_dict()
         return dct
 
+    def to_string(self):
+        string_list = []
+        for key, value in self.dct.iteritems():
+            string_value = value.to_string()
+            if string_value == '':
+              string_list.append(key)
+            else:
+              string_value = string_value.split(',')
+              string_value = map(lambda x: key + '.' + x, string_value)
+              string_list.append(','.join(string_value))
+
+        return ','.join(string_list)
+
     def parse_include_args(self, include_args):
         if isinstance(include_args, basestring):
             return { include_args: {} }
