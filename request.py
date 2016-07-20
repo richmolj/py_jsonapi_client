@@ -1,4 +1,7 @@
+import urllib
 import requests
+import util
+from logger import logger
 from errors import *
 
 def error_handling(f):
@@ -31,9 +34,18 @@ class Request:
 
     def __req(self, verb, url, params):
         func = getattr(requests, verb)
-
         headers = self.__derive_headers(self.model)
+
+        self.__log_request(url, verb, params)
         return func(url, params=params, headers=headers)
+
+    def __log_request(self, url, verb, params):
+        full_url = url
+        if bool(params):
+            full_url += '?' + urllib.urlencode(params)
+        full_url = util.colorize('cyan', full_url)
+        verb = util.colorize('magenta', verb.upper())
+        logger.debug(verb + ' ' + full_url)
 
     def __derive_headers(self, model):
         headers = {

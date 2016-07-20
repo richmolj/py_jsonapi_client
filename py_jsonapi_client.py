@@ -9,3 +9,4 @@ from attribute import Attribute
 from relations import *
 
 from model import Model
+from logger import logger

@@ -36,6 +36,14 @@ class Model(object):
         for key, value in attributes.iteritems():
              self.__set_attribute(key, value)
 
+    def __repr__(self):
+        """
+            Rails-style string representation. Ex:
+            #<models.Person@0x12a8db50 id: 123, name: "John Doe">
+        """
+
+        return util.friendly_repr(self)
+
     # Private
 
     def __set_attribute(self, key, value):
