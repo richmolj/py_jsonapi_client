@@ -75,3 +75,11 @@ class TestFinders(object):
         person = Person.includes('tags').first()
         assert len(person.tags) == 2
         assert len(person.pets) == 0
+
+    def test_reload(self):
+        person = Person({ 'name': 'testname' })
+        person.save()
+        person.name = 'foo'
+        assert person.name == 'foo'
+        person.reload()
+        assert person.name == 'testname'

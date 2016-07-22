@@ -42,6 +42,12 @@ class Persistence(object):
         response = request.destroy(url)
         return Validation(self).validate_response(response)
 
+    def reload(self):
+        found = self.find(self.id)
+        self.attributes = found.attributes
+        self.mark_persisted()
+        return self
+
     # private
 
     def __update_or_save(self):

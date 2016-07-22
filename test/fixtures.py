@@ -9,6 +9,7 @@ class Post(japi.Model):
     basic = True
 
     title = japi.Attribute()
+    body = japi.Attribute()
 
     creator  = japi.BelongsTo(class_name='Author')
     comments = japi.HasMany()

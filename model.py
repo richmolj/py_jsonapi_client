@@ -55,9 +55,13 @@ class Model(Persistence):
 
         return util.friendly_repr(self)
 
-    def assign_attributes(self, attributes):
-        self.attributes.update(attributes)
-        return self.attributes
+    def assign_attributes(self, assignments):
+        """
+            Same as update_attributes without the save
+            Ensures only valid attributes get set
+        """
+        for key, value in assignments.iteritems():
+             self.__set_attribute(key, value)
 
     # Private
 
