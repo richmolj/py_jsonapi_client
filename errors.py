@@ -28,6 +28,13 @@ class RecordNotFoundError(Exception):
     def __str__(self):
         return "Failed to lookup %s with id %s" % (self.klass.__name__, self.record_id)
 
+class LinkNotFoundError(Exception):
+    def __init__(self, association_name):
+        self.association_name = association_name
+
+    def __str__(self):
+        return "No links found for relation " + association_name
+
 class UnauthenticatedError(JsonApiError):
     pass
 

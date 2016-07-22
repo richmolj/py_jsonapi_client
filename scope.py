@@ -15,10 +15,7 @@ class Scope:
         url = self.model.base_url()
         query_params = self.as_query_params()
         json = Request(self.model, params=query_params).get(url).json()
-        models = []
-        for payload in json['data']:
-            models.append(util.model_from_payload(payload, json))
-        return models
+        return util.model_from_payload(json['data'], json)
 
     def where(self, clause):
         self.filter_clause.update(clause)
@@ -53,13 +50,13 @@ class Scope:
 
         return self
 
-    def per(self, number):
-        self.pagination_clause['number'] = number
-        return self;
+    def per(self, size):
+        self.pagination_clause['size'] = size
+        return self
 
     def page(self, number):
-        self.pagination_clause['size'] = number
-        return self;
+        self.pagination_clause['number'] = number
+        return self
 
     def order(self, order):
         if isinstance(order, dict):

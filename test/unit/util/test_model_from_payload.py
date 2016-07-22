@@ -117,3 +117,27 @@ class TestModelFromPayload(object):
         assert isinstance(model.rating, Rating)
         assert model.rating.id == '46'
         assert model.rating.stars == 5
+
+    def test_links(self):
+        payload = {
+            'data': {
+                'id': '1',
+                'type': 'posts',
+                'attributes': { },
+                'relationships': {
+                    'comments': {
+                        'links': {
+                            'self': 'http://foo.com/api/posts/1/relationships/comments',
+                            'related': 'http://foo.com/api/posts/1/comments'
+                        }
+                    }
+                }
+            }
+        }
+        model = japi.util.model_from_payload(payload['data'], payload)
+        assert model.links == {
+            'comments': {
+                'self': 'http://foo.com/api/posts/1/relationships/comments',
+                'related': 'http://foo.com/api/posts/1/comments'
+            }
+        }

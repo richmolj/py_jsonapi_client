@@ -28,7 +28,18 @@ class TestFinders(object):
         assert len(people) == 10
         assert isinstance(people[0], Person)
 
-    def test_pagination(self):
+    def test_per(self):
+        people = Person.per(2).all()
+        assert len(people) == 2
+        assert matchArray(map(lambda p: p.name, people), ['John', 'Joe'])
+
+    def test_page(self):
+        people = Person.page(2).all()
+        assert len(people) == 10
+        names = map(lambda p: p.name, people)
+        assert 'John' not in names
+
+    def test_full_pagination(self):
         people = Person.per(2).page(2).all()
         assert len(people) == 2
         assert matchArray(map(lambda p: p.name, people), ['Bill', 'David'])

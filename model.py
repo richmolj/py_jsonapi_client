@@ -3,9 +3,10 @@ from model_meta import ModelMeta
 from errors import UndefinedAttributeError
 from attribute import Attribute
 from persistence import Persistence
+from relationships import Relationships
 import util
 
-class Model(Persistence):
+class Model(Relationships, Persistence):
     __metaclass__ = ModelMeta
 
     site = None
@@ -43,6 +44,7 @@ class Model(Persistence):
         self.relations = util.Hash()
         self.errors = util.Hash()
         self.original_attributes = util.Hash()
+        self.links = util.Hash()
 
         for key, value in attributes.iteritems():
              self.__set_attribute(key, value)

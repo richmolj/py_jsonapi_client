@@ -49,6 +49,11 @@ class Request:
         response = self.__req('delete', url)
         return response
 
+    @error_handling
+    def link(self, url):
+        response = self.__req('get', url, self.params)
+        return response
+
     # private
 
     def __req(self, verb, url, params = {}):

@@ -57,3 +57,10 @@ class TestExplicitNamespace(object):
 
     def test_class_name(self):
         assert Introspector.relation_list()['explicit_namespace'].klass() == namespace_helper.NamespacedModel
+
+class TestFetch(object):
+
+    @raises(japi.LinkNotFoundError)
+    def test_fetch_raises_error_when_no_link(self):
+        post = Post()
+        post.fetch('comments')
