@@ -44,9 +44,14 @@ class Request:
         response = self.__req('post', url, self.params)
         return response
 
+    @error_handling
+    def destroy(self, url):
+        response = self.__req('delete', url)
+        return response
+
     # private
 
-    def __req(self, verb, url, params):
+    def __req(self, verb, url, params = {}):
         func = getattr(requests, verb)
         headers = self.__derive_headers(self.model)
         self.__log_request(url, verb, params)
@@ -56,11 +61,12 @@ class Request:
             response = func(url, params=params, headers=headers)
         else:
             response = func(url, json=params, headers=headers)
-        self.__log_response(response.status_code, response.json())
+        self.__log_response(response)
         return response
 
-    def __log_response(self, status_code, payload):
-        if status_code == 200 or status_code == 201:
+    def __log_response(self, response):
+        status_code = response.status_code
+        if status_code == 200 or status_code == 201 or status_code == 204:
             status_code = util.colorize('green', str(status_code))
         elif status_code == 422:
             status_code = util.colorize('yellow', str(status_code))
@@ -70,7 +76,9 @@ class Request:
             status_code = util.colorize('bold', str(status_code))
 
         logger.debug(util.colorize('bold', 'Server Response: ') + util.colorize('bold', status_code))
-        logger.debug(json.dumps(payload, indent=2))
+
+        if response.status_code != 204: # delete may have no json
+            logger.debug(json.dumps(response.json(), indent=2))
 
     def __log_request(self, url, verb, params):
         full_url = url

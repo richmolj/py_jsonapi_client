@@ -36,6 +36,12 @@ class Persistence(object):
         self.assign_attributes(updates)
         return self.save()
 
+    def destroy(self):
+        request = Request(self)
+        url = self.base_url() + '/' + self.id
+        response = request.destroy(url)
+        return Validation(self).validate_response(response)
+
     # private
 
     def __update_or_save(self):

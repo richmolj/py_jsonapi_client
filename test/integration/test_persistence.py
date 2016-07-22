@@ -10,7 +10,7 @@ class TestPersistence(object):
         found = Person.find(person.id)
         assert found.name == 'mytestname'
 
-    def test_basic_update(self):
+    def test_basic_update_direct_assignment(self):
         person = Person({ 'name': 'updateme' })
         person.save()
         found = Person.find(person.id)
@@ -56,3 +56,16 @@ class TestPersistence(object):
         assert person.persisted == False
         person.save()
         assert person.persisted == True
+
+    def test_destroy(self):
+        person = Person({ 'name': 'mytestname' })
+        person.save()
+        found = Person.find(person.id)
+        assert found.name == 'mytestname'
+        assert person.destroy() == True
+        raised = False
+        try:
+            Person.find(person.id)
+        except japi.RecordNotFoundError as e:
+            raised = True
+        assert raised
