@@ -3,25 +3,6 @@ from ...fixtures import *
 
 import py_jsonapi_client as japi
 
-# class Post(japi.Model):
-    # title = japi.Attribute()
-
-    # author = japi.BelongsTo()
-    # comments = japi.HasMany()
-    # rating = japi.HasOne()
-
-# class Author(japi.Model):
-    # name = japi.Attribute()
-
-# class Comment(japi.Model):
-    # text = japi.Attribute()
-
-# class Rating(japi.Model):
-    # stars = japi.Attribute()
-
-# class SpecialPost(japi.Model):
-    # jsonapi_type = 'important_posts'
-
 class TestModelFromPayload(object):
 
     def test_basic(self):
@@ -38,6 +19,19 @@ class TestModelFromPayload(object):
         assert isinstance(model, Post)
         assert model.title == 'test post'
         assert model.id == 2
+
+    def test_persisted(self):
+        payload = {
+            'data': {
+                'type': 'posts',
+                'id': 2,
+                'attributes': {
+                    'title': 'test post'
+                }
+            }
+        }
+        model = japi.util.model_from_payload(payload['data'], payload)
+        assert model.persisted == True
 
     def test_null_id(self):
         payload = {

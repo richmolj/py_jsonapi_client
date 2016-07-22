@@ -2,9 +2,10 @@ from scope import Scope
 from model_meta import ModelMeta
 from errors import UndefinedAttributeError
 from attribute import Attribute
+from persistence import Persistence
 import util
 
-class Model(object):
+class Model(Persistence):
     __metaclass__ = ModelMeta
 
     site = None
@@ -29,9 +30,19 @@ class Model(object):
     def scope(self):
         return Scope(self)
 
+    @classmethod
+    def base_url(self):
+        url = self.site
+        if self.namespace:
+            url += "/{namespace!s}".format(namespace=self.namespace)
+        url += self.path
+        return url
+
     def __init__(self, attributes = {}):
         self.attributes = util.Hash()
         self.relations = util.Hash()
+        self.errors = util.Hash()
+        self.original_attributes = util.Hash()
 
         for key, value in attributes.iteritems():
              self.__set_attribute(key, value)
@@ -43,6 +54,10 @@ class Model(object):
         """
 
         return util.friendly_repr(self)
+
+    def assign_attributes(self, attributes):
+        self.attributes.update(attributes)
+        return self.attributes
 
     # Private
 

@@ -12,9 +12,9 @@ class Scope:
         self.include_clause = util.Hash()
 
     def all(self):
-        url = self.__base_url()
+        url = self.model.base_url()
         query_params = self.as_query_params()
-        json = Request(self.model).get(url, params=query_params).json()
+        json = Request(self.model, params=query_params).get(url).json()
         models = []
         for payload in json['data']:
             models.append(util.model_from_payload(payload, json))
@@ -25,9 +25,10 @@ class Scope:
         return self
 
     def find(self, id):
-        path = "{base_url}/{id}".format(base_url=self.__base_url(), id=id)
+        burl = self.model.base_url()
+        path = "{base_url}/{id}".format(base_url=burl, id=id)
         query_params = self.as_query_params()
-        response = Request(self.model).get(path, params=query_params)
+        response = Request(self.model, params=query_params).get(path)
         if response.status_code == 404:
             raise RecordNotFoundError(self.model, id)
         else:
@@ -113,10 +114,3 @@ class Scope:
         if direction == 'desc':
             attribute = '-' + attribute
         return { 'sort': attribute }
-
-    def __base_url(self):
-        url = self.model.site
-        if self.model.namespace:
-            url += "/{namespace!s}".format(namespace=self.model.namespace)
-        url += self.model.path
-        return url

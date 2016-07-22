@@ -1,17 +1,31 @@
 from relations import HasMany
 import py_jsonapi_client as japi
 
-def model_from_payload(payload_slice, payload):
-    klass = __model_for(payload_slice['type'])
-    if not klass:
+def model_from_payload(payload_slice, payload, **opts):
+    instance = __instance(payload_slice, **opts)
+    if not instance:
         return
-    instance = klass(payload_slice['attributes'])
+    __process_attributes(instance, payload_slice)
+    __process_relationships(instance, payload_slice, payload)
+    return instance
 
+def __instance(payload_slice, **opts):
+    if 'update' in opts:
+        return opts['update']
+    else:
+        klass = __model_for(payload_slice['type'])
+        if klass:
+            return klass()
+
+def __process_attributes(instance, payload_slice):
+    instance.assign_attributes(payload_slice['attributes'])
     if 'id' in payload_slice:
         instance.id = payload_slice['id']
+        instance.mark_persisted()
 
-    for relation_name, record in __relationships_for(payload_slice, payload):
-        relation = klass.relation_list()[relation_name]
+def __process_relationships(instance, payload_slice, payload):
+      for relation_name, record in __relationships_for(payload_slice, payload):
+        relation = instance.relation_list()[relation_name]
         if relation:
             if isinstance(relation, HasMany):
                 # Ensure prior records are not blown away
@@ -20,8 +34,6 @@ def model_from_payload(payload_slice, payload):
                 setattr(instance, relation_name, prior)
             else:
                 setattr(instance, relation_name, record)
-
-    return instance
 
 def __relationships_for(payload_slice, payload):
     if not 'relationships' in payload_slice:

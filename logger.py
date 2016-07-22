@@ -8,3 +8,4 @@ if os.isatty(sys.stdin.fileno()):
     logger.setLevel(logging.DEBUG)
     stream_handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(stream_handler)
+    logger.propagate = False

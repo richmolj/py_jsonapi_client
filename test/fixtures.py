@@ -4,6 +4,8 @@ import namespace_helper
 import py_jsonapi_client as japi
 
 class Post(japi.Model):
+    site = 'http://test.com'
+
     basic = True
 
     title = japi.Attribute()

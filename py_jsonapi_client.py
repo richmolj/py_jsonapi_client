@@ -7,6 +7,7 @@ import util
 from errors import *
 from attribute import Attribute
 from relations import *
+from request import Request
 
 from model import Model
 from logger import logger

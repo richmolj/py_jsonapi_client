@@ -1,3 +1,17 @@
+class JsonApiError(Exception):
+    def __init__(self, response):
+        self.message = self.__error_message_from_jsonapi(response.json())
+
+    def __str__(self):
+        return self.message
+
+    def __error_message_from_jsonapi(self, json):
+        error = json['errors'][0]
+        if 'detail' in error:
+            return error['detail']
+        else:
+            return error['title']
+
 class UndefinedAttributeError(Exception):
     def __init__(self, attr_name, obj):
         self.attr_name = attr_name
@@ -14,14 +28,14 @@ class RecordNotFoundError(Exception):
     def __str__(self):
         return "Failed to lookup %s with id %s" % (self.klass.__name__, self.record_id)
 
-class UnauthenticatedError(Exception):
-    def __str__(self):
-        return "Server returned 401 - Bad token?"
+class UnauthenticatedError(JsonApiError):
+    pass
 
-class ServerError(Exception):
-    def __str__(self):
-        return "API endpoint returned 500 - error on API side"
+class ServerError(JsonApiError):
+    pass
 
-class AccessDeniedError(Exception):
-    def __str__(self):
-        return "API endpoint returned 403"
+class AccessDeniedError(JsonApiError):
+    pass
+
+class InvalidFieldError(JsonApiError):
+    pass
