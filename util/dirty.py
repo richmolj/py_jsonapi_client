@@ -26,6 +26,8 @@ def __dirty_singular(new, original, **opts):
         return new
     elif not original.uuid == new.uuid:
         return new
+    elif new.marked_for_disassociation or new.marked_for_destruction:
+        return new
     elif 'recursive' in opts and bool(new.changed_relations()):
         return new
 
@@ -34,6 +36,8 @@ def __dirty_has_many(records, original_records, **opts):
     original_uuids = map(lambda r: r.uuid, original_records)
     for record in records:
         if not record.uuid in original_uuids:
+            dirty.append(record)
+        elif record.marked_for_disassociation or record.marked_for_destruction:
             dirty.append(record)
         elif 'recursive' in opts and bool(record.changed_relations()):
             dirty.append(record)

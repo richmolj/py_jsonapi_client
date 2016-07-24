@@ -173,3 +173,119 @@ class TestRelationships(object):
         for mocked in self.mocked_request('put'):
             person.save({ 'relationships': [{ 'pets': 'toys' }, 'company'] })
             assert mocked.call_args[1]['json'] == expected_payload
+
+    def test_saving_singular_marked_for_destruction(self):
+        expected_payload = {
+            'data': {
+                'id': '44',
+                'type': 'people',
+                'relationships': {
+                    'company': {
+                        'data': {
+                            'type': 'companies',
+                            'id': '999',
+                            'attributes': { '_destroy': True }
+                        }
+                    }
+                }
+            }
+        }
+
+        company = Company({ 'id': '999' })
+        company.mark_persisted()
+        person = Person({ 'id': '44', 'company': company })
+        person.mark_persisted()
+        person.company.mark_for_destruction()
+
+        for mocked in self.mocked_request('put'):
+            person.save({ 'relationships': 'company' })
+            assert mocked.call_args[1]['json'] == expected_payload
+
+    def test_saving_singular_marked_for_disassociation(self):
+        expected_payload = {
+            'data': {
+                'id': '44',
+                'type': 'people',
+                'relationships': {
+                    'company': {
+                        'data': {
+                            'type': 'companies',
+                            'id': '999',
+                            'attributes': { '_delete': True }
+                        }
+                    }
+                }
+            }
+        }
+
+        company = Company({ 'id': '999' })
+        company.mark_persisted()
+        person = Person({ 'id': '44', 'company': company })
+        person.mark_persisted()
+        person.company.mark_for_disassociation()
+
+        for mocked in self.mocked_request('put'):
+            person.save({ 'relationships': 'company' })
+            assert mocked.call_args[1]['json'] == expected_payload
+
+    def test_saving_plural_marked_for_destruction(self):
+        expected_payload = {
+            'data': {
+                'id': '44',
+                'type': 'people',
+                'relationships': {
+                    'pets': {
+                        'data': [
+                            {
+                                'type': 'pets',
+                                'id': '7',
+                                'attributes': { '_destroy': True }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        pet1 = Pet({ 'id': '999' })
+        pet1.mark_persisted()
+        pet2 = Pet({ 'id': '7' })
+        pet2.mark_persisted()
+        person = Person({ 'id': '44', 'pets': [pet1, pet2] })
+        person.mark_persisted()
+        pet2.mark_for_destruction()
+
+        for mocked in self.mocked_request('put'):
+            person.save({ 'relationships': 'pets' })
+            assert mocked.call_args[1]['json'] == expected_payload
+
+    def test_saving_plural_marked_for_disassociation(self):
+        expected_payload = {
+            'data': {
+                'id': '44',
+                'type': 'people',
+                'relationships': {
+                    'pets': {
+                        'data': [
+                            {
+                                'type': 'pets',
+                                'id': '7',
+                                'attributes': { '_delete': True }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        pet1 = Pet({ 'id': '999' })
+        pet1.mark_persisted()
+        pet2 = Pet({ 'id': '7' })
+        pet2.mark_persisted()
+        person = Person({ 'id': '44', 'pets': [pet1, pet2] })
+        person.mark_persisted()
+        pet2.mark_for_disassociation()
+
+        for mocked in self.mocked_request('put'):
+            person.save({ 'relationships': 'pets' })
+            assert mocked.call_args[1]['json'] == expected_payload

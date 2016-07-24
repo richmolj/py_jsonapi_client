@@ -19,6 +19,20 @@ class TestDirtyTracking(object):
         post.mark_clean()
         assert post.errors == {}
 
+    def test_mark_clean_removes_destruction(self):
+        post = Post()
+        post.mark_for_destruction()
+        assert post.marked_for_destruction == True
+        post.mark_clean()
+        assert post.marked_for_destruction == False
+
+    def test_mark_clean_removes_disassociation(self):
+        post = Post()
+        post.mark_for_disassociation()
+        assert post.marked_for_disassociation == True
+        post.mark_clean()
+        assert post.marked_for_disassociation == False
+
     def test_mark_clean_resets_original_attributes(self):
         post = Post({ 'title': 'foo' })
         post.mark_persisted()
@@ -57,17 +71,37 @@ class TestDirtyTracking(object):
             'comments': [new_comment]
         }
 
-    # def test_marked_for_destruction_has_many(self):
-        # pass
+    def test_marked_for_destruction_has_many(self):
+        comment = Comment()
+        comment.mark_persisted()
+        post = Post({ 'comments': [comment] })
+        post.mark_persisted()
+        assert post.changed_relations() == {}
+        comment.mark_for_destruction()
+        assert post.changed_relations() == { 'comments': [comment] }
 
-    # def test_marked_for_destruction_singular(self):
-        # pass
+    def test_marked_for_destruction_singular(self):
+        post = Post({ 'creator': Author() })
+        post.mark_persisted()
+        assert post.changed_relations() == {}
+        post.creator.mark_for_destruction()
+        assert post.changed_relations() == { 'creator': post.creator }
 
-    # def test_marked_for_disassociation_has_many(self):
-        # pass
+    def test_marked_for_disassociation_has_many(self):
+        comment = Comment()
+        comment.mark_persisted()
+        post = Post({ 'comments': [comment] })
+        post.mark_persisted()
+        assert post.changed_relations() == {}
+        comment.mark_for_disassociation()
+        assert post.changed_relations() == { 'comments': [comment] }
 
-    # def test_marked_for_disassociation_singular(self):
-        # pass
+    def test_marked_for_disassociation_singular(self):
+        post = Post({ 'creator': Author() })
+        post.mark_persisted()
+        assert post.changed_relations() == {}
+        post.creator.mark_for_disassociation()
+        assert post.changed_relations() == { 'creator': post.creator }
 
     def test_recursive_changed_relations_singular(self):
         post = Post()

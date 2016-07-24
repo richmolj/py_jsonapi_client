@@ -34,10 +34,10 @@ class SaveParams(object):
 
     def __destruction_params(self):
         params = {}
-        # if self.model.marked_for_destruction:
-            # params['_destroy'] = True
-        # elif self.model.marked_for_disassociation:
-            # params['_delete'] = True
+        if self.model.marked_for_destruction:
+            params['_destroy'] = True
+        elif self.model.marked_for_disassociation:
+            params['_delete'] = True
         return params
 
     def __relation_params(self, relationships):

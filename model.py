@@ -14,6 +14,8 @@ class Model(Relationships, Persistence):
     namespace = None
     path = None
     relation_list = util.delegate(to='attribute_list')
+    marked_for_destruction = False
+    marked_for_disassociation = False
 
     find     = util.delegate(to='scope')
     where    = util.delegate(to='scope')

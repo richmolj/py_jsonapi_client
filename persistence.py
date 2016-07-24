@@ -11,8 +11,16 @@ class Persistence(object):
         self.persisted = True
         self.mark_clean()
 
+    def mark_for_destruction(self):
+        self.marked_for_destruction = True
+
+    def mark_for_disassociation(self):
+        self.marked_for_disassociation = True
+
     def mark_clean(self):
         self.errors = {}
+        self.marked_for_destruction = False
+        self.marked_for_disassociation = False
 
         if self.persisted:
             # must deep copy otherwise a normal set will affect this
