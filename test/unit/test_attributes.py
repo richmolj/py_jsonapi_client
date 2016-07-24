@@ -18,6 +18,10 @@ class TestInstantiation(object):
         post = Post({'asdf': 'something'})
         assert post.attributes == {}
 
+    def test_id_assignable(self):
+        post = Post({ 'id': 1 })
+        assert post.id == 1
+
 class TestDirectAssignment(object):
 
     def test_blanks(self):
@@ -28,6 +32,7 @@ class TestDirectAssignment(object):
         post = Post()
         post.title = 'Man Bites Dog'
         assert post.title == 'Man Bites Dog'
+        assert post.attributes == { 'title': 'Man Bites Dog' }
 
 class TestIntrospection(object):
 
@@ -57,3 +62,9 @@ class TestDerivations(object):
 
     def test_jsonapi_type_derived(self):
         assert Post.jsonapi_type == 'posts'
+
+class TestRelations(object):
+
+    def test_attributes_does_not_include_relations(self):
+        post = Post({ 'title': 'mytitle', 'author': { 'name': 'Joe' } })
+        assert 'author' not in post.attributes.keys()

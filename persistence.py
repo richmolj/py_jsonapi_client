@@ -15,20 +15,40 @@ class Persistence(object):
         self.errors = {}
 
         if self.persisted:
+            # must deep copy otherwise a normal set will affect this
             self.original_attributes = copy.deepcopy(self.attributes)
-        else:
-            self.original_attributes = {}
+            self.original_relations = copy.deepcopy(self.relations)
 
     def changed_attributes(self):
         changes = {}
-        if bool(self.original_attributes):
-            for key, value in self.attributes.iteritems():
-                if not self.original_attributes[key] == value:
-                    changes[key] = value
+        for key, value in self.attributes.iteritems():
+            if not self.original_attributes[key] == value:
+                changes[key] = value
         return changes
 
-    def save(self):
-        response = self.__update_or_save()
+    # todo recursion
+    def changed_relations(self):
+        changes = {}
+        for key, value in self.relations.iteritems():
+            if isinstance(value, list):
+                dirty = []
+                original_uuids = map(lambda r: r.uuid, self.original_relations[key] or [])
+                for record in value:
+                    if not record.uuid in original_uuids:
+                        dirty.append(record)
+                if bool(dirty):
+                    changes[key] = dirty
+            elif self.original_relations[key] == None:
+                changes[key] = value
+            elif not self.original_relations[key].uuid == value.uuid:
+                changes[key] = value
+        return changes
+
+    def save(self, opts = {}):
+        relationships = {}
+        if 'relationships' in opts:
+            relationships = opts['relationships']
+        response = self.__update_or_save(relationships)
         self.__after_save(response)
         return Validation(self).validate_response(response)
 
@@ -50,8 +70,9 @@ class Persistence(object):
 
     # private
 
-    def __update_or_save(self):
-        request = Request(self, params=self.__save_params())
+    def __update_or_save(self, relationships):
+        save_params = util.SaveParams(self).generate({ 'relationships': relationships })
+        request = Request(self, params=save_params)
         url = self.base_url()
 
         if self.persisted:
@@ -70,16 +91,5 @@ class Persistence(object):
                         update=self
                         )
 
-    def __save_params(self):
-        params = {
-            'data': {
-                'id': self.id,
-                'type': self.jsonapi_type,
-                'attributes': util.dict_except(self.attributes, 'id')
-            }
-        }
-
-        if self.persisted:
-            params['data']['attributes'] = self.changed_attributes()
-
-        return params
+    def __save_params(self, relationships):
+        return util.SaveParams(self).generate({ 'relationships': relationships })

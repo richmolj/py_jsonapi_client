@@ -24,8 +24,7 @@ class ModelMeta(type):
 
     @staticmethod
     def __assemble_subclass_dictionary(dct, parent, name):
-        if ModelMeta.__is_model(parent):
-            ModelMeta.__merge_parent_dictionary(parent, dct)
+        ModelMeta.__merge_parent_dictionary(parent, dct)
         if not 'jsonapi_type' in dct:
             dct['jsonapi_type'] = inflection.underscore(inflection.pluralize(name))
         if not 'path' in dct:
@@ -35,11 +34,15 @@ class ModelMeta(type):
     @staticmethod
     def __merge_parent_dictionary(parent, dct):
         parent_dct = parent.__dict__.copy()
-        del parent_dct['__module__']
-        del parent_dct['__doc__']
-        del parent_dct['jsonapi_type']
-        del parent_dct['path']
-        dct.update(parent_dct)
+        if ModelMeta.__is_model(parent):
+            del parent_dct['__module__']
+            del parent_dct['__doc__']
+            del parent_dct['jsonapi_type']
+            del parent_dct['path']
+            dct.update(parent_dct)
+        else:
+            if 'id' in parent_dct:
+                dct['id'] = parent_dct['id']
 
     @staticmethod
     def __process_delegates(dct):

@@ -1,3 +1,4 @@
+import uuid
 from scope import Scope
 from model_meta import ModelMeta
 from errors import UndefinedAttributeError
@@ -40,14 +41,22 @@ class Model(Relationships, Persistence):
         return url
 
     def __init__(self, attributes = {}):
+        self.uuid = uuid.uuid4()
         self.attributes = util.Hash()
         self.relations = util.Hash()
         self.errors = util.Hash()
         self.original_attributes = util.Hash()
+        self.original_relations = util.Hash()
         self.links = util.Hash()
 
         for key, value in attributes.iteritems():
              self.__set_attribute(key, value)
+
+    def __eq__(self, other):
+        if other == None:
+            return False
+        else:
+            return self.uuid == other.uuid
 
     def __repr__(self):
         """

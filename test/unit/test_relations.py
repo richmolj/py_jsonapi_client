@@ -47,6 +47,12 @@ class TestSetters(object):
 
 class TestIntrospection(object):
 
+    def test_relations(self):
+        post = Post()
+        author = Author()
+        post.creator = author
+        assert post.relations == { 'creator': author }
+
     def test_relation_list(self):
         assert matchArray(Post.relation_list().keys(), ['rating', 'comments', 'creator'])
 

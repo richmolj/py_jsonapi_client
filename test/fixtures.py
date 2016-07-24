@@ -43,8 +43,12 @@ class Person(ApplicationRecord):
     name = japi.Attribute()
     age = japi.Attribute()
 
+    company = japi.BelongsTo()
     tags = japi.HasMany()
     pets = japi.HasMany()
+
+class Company(ApplicationRecord):
+    name = japi.Attribute()
 
 class Tag(ApplicationRecord):
     name = japi.Attribute()
