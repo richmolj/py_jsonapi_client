@@ -20,29 +20,10 @@ class Persistence(object):
             self.original_relations = copy.deepcopy(self.relations)
 
     def changed_attributes(self):
-        changes = {}
-        for key, value in self.attributes.iteritems():
-            if not self.original_attributes[key] == value:
-                changes[key] = value
-        return changes
+        return util.changed_attributes(self)
 
-    # todo recursion
-    def changed_relations(self):
-        changes = {}
-        for key, value in self.relations.iteritems():
-            if isinstance(value, list):
-                dirty = []
-                original_uuids = map(lambda r: r.uuid, self.original_relations[key] or [])
-                for record in value:
-                    if not record.uuid in original_uuids:
-                        dirty.append(record)
-                if bool(dirty):
-                    changes[key] = dirty
-            elif self.original_relations[key] == None:
-                changes[key] = value
-            elif not self.original_relations[key].uuid == value.uuid:
-                changes[key] = value
-        return changes
+    def changed_relations(self, **opts):
+        return util.changed_relations(self, **opts)
 
     def save(self, opts = {}):
         relationships = {}

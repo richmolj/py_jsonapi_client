@@ -24,7 +24,14 @@ class SpecialPost(Post):
 class Comment(japi.Model):
     text = japi.Attribute()
 
+    author = japi.BelongsTo()
+
 class Author(japi.Model):
+    name = japi.Attribute()
+
+    state = japi.BelongsTo()
+
+class State(japi.Model):
     name = japi.Attribute()
 
 class Rating(japi.Model):

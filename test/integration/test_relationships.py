@@ -5,6 +5,11 @@ from ..fixtures import *
 from ..helpers import *
 import py_jsonapi_client as japi
 
+# NB - the tests asserting against a payload are run this
+# way because the spec server does not implement this logic
+# Once we extract various libaries, we can implement this
+# behavior in the test server and adjust the tests
+
 class TestRelationships(object):
     def test_fetch_via_link(self):
         person = Person.first()
@@ -121,19 +126,50 @@ class TestRelationships(object):
             assert mocked.call_args[1]['json'] == expected_payload
 
     # pets is not dirty, but pet toys are
+    # should only include the pet with dirty
+    # toys in the request
     def test_saving_dirty_subrelations(self):
-                expected_payload = {
+        expected_payload = {
             'data': {
                 'id': '44',
                 'type': 'people',
                 'relationships': {
-                    'company': {
-                        'data': {
-                            'type': 'companies',
-                            'id': '999'
-                        }
+                    'pets': {
+                        'data': [
+                            {
+                                'type': 'pets',
+                                'id': '999',
+                                'relationships': {
+                                    'toys': {
+                                        'data': [
+                                            {
+                                                'type': 'toys',
+                                                'id': '34'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
         }
 
+        person = Person({ 'id': '44' })
+        toy = Toy({ 'id': '33' })
+        toy.mark_persisted()
+        pet1 = Pet({'id': '999', 'toys': [toy] })
+        pet1.mark_persisted()
+        pet2 = Pet({ 'id': '7', 'toys': [Toy()] })
+        pet2.mark_persisted()
+        person.pets = [pet1, pet2]
+        person.mark_persisted()
+        assert person.changed_relations(recursive=True) == {}
+        new_toy = Toy({ 'id': '34' })
+        new_toy.mark_persisted()
+        person.pets[0].toys.append(new_toy)
+
+        for mocked in self.mocked_request('put'):
+            person.save({ 'relationships': [{ 'pets': 'toys' }, 'company'] })
+            assert mocked.call_args[1]['json'] == expected_payload

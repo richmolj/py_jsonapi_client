@@ -69,5 +69,30 @@ class TestDirtyTracking(object):
     # def test_marked_for_disassociation_singular(self):
         # pass
 
-    # def test_recursive_changed_relationships(self):
-        # pass
+    def test_recursive_changed_relations_singular(self):
+        post = Post()
+        creator = Author()
+        post.creator = creator
+        post.mark_persisted()
+        post.creator.mark_persisted()
+        assert post.changed_relations(recursive=True) == {}
+        state = State()
+        post.creator.state = state
+        assert post.changed_relations(recursive=True) == { 'creator': creator }
+        assert post.creator.changed_relations() == { 'state': state }
+
+    def test_recursive_changed_relations_has_many(self):
+        post = Post()
+        comment = Comment()
+        comment.mark_persisted()
+        post.comments = [comment]
+        post.mark_persisted()
+        assert post.changed_relations(recursive=True) == {}
+        author = Author()
+        comment.author = author
+        assert post.changed_relations(recursive=True) == {
+            'comments': [comment]
+        }
+        assert comment.changed_relations() == { 'author': author }
+
+
