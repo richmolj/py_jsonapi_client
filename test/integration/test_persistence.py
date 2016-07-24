@@ -1,3 +1,5 @@
+from mock import patch
+import requests
 from ..fixtures import *
 from ..helpers import *
 import py_jsonapi_client as japi
@@ -9,6 +11,25 @@ class TestPersistence(object):
         person.save()
         found = Person.find(person.id)
         assert found.name == 'mytestname'
+
+    def test_save_when_no_changes(self):
+        person = Person({ 'id': '1', 'name': 'mytestname' })
+        person.mark_persisted()
+
+        with patch.object(requests, 'put') as mocked:
+            assert person.save() == True
+            assert len(mocked.mock_calls) == 0
+
+    def test_save_when_no_changes_relationships_specified(self):
+        person = Person({ 'id': '1', 'name': 'mytestname' })
+        creator = Author()
+        creator.mark_persisted()
+        person.creator = creator
+        person.mark_persisted()
+
+        with patch.object(requests, 'put') as mocked:
+            assert person.save({ 'relationships': 'creator' }) == True
+            assert len(mocked.mock_calls) == 0
 
     def test_basic_update_direct_assignment(self):
         person = Person({ 'name': 'updateme' })

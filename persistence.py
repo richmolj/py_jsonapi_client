@@ -34,12 +34,14 @@ class Persistence(object):
         return util.changed_relations(self, **opts)
 
     def save(self, opts = {}):
-        relationships = {}
-        if 'relationships' in opts:
-            relationships = opts['relationships']
-        response = self.__update_or_save(relationships)
-        self.__after_save(response)
-        return Validation(self).validate_response(response)
+        relation_changes = 'relationships' in opts and bool(self.changed_relations(recursive=True))
+        if self.changed_attributes() or relation_changes:
+            save_params = util.SaveParams(self).generate(opts)
+            response = self.__update_or_save(save_params)
+            self.__after_save(response)
+            return Validation(self).validate_response(response)
+        else:
+            return True
 
     def update_attributes(self, updates):
         self.assign_attributes(updates)
@@ -59,8 +61,7 @@ class Persistence(object):
 
     # private
 
-    def __update_or_save(self, relationships):
-        save_params = util.SaveParams(self).generate({ 'relationships': relationships })
+    def __update_or_save(self, save_params):
         request = Request(self, params=save_params)
         url = self.base_url()
 

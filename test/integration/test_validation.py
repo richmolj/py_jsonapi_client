@@ -5,7 +5,7 @@ import py_jsonapi_client as japi
 class TestValidation(object):
 
     def test_server_validation_error(self):
-        person = Person()
+        person = Person({ 'age': 4 })
         assert person.save() == False
         assert person.errors['name'] == "can't be blank"
 
@@ -15,7 +15,7 @@ class TestValidation(object):
         assert person.errors == {}
 
     def test_errors_removed(self):
-        person = Person()
+        person = Person({ 'age': 4 })
         person.save()
         assert bool(person.errors)
         person.name = 'testname'
